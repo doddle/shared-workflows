@@ -21,7 +21,7 @@ on:
 
 jobs:
   draft-release:
-    uses: doddle/shared-workflows/.github/workflows/reusable-draft-new-release-workflow.yml@master
+    uses: doddle/shared-workflows/.github/workflows/reusable-draft-new-release-workflow.yml@1.x
     with:
       semver: ${{ github.event.inputs.semver }}
     secrets:
@@ -41,7 +41,7 @@ on:
 
 jobs:
   publish-release:
-    uses: doddle/shared-workflows/.github/workflows/reusable-publish-new-release-workflow.yml@master
+    uses: doddle/shared-workflows/.github/workflows/reusable-publish-new-release-workflow.yml@1.x
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
 ```
