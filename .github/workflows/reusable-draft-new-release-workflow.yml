@@ -1,0 +1,58 @@
+name: "Draft new release"
+
+on:
+  workflow_call:
+    inputs:
+      semver:
+        required: true
+        type: string
+    secrets:
+      GH_TOKEN:
+        required: true
+
+jobs:
+  draft-new-release:
+    name: "Draft a new release"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Bump version in package.json
+        run: |
+          echo "PACKAGE_VERSION=$(npm version ${{ inputs.semver }} --git-tag-version false | sed 's/v//')" >> $GITHUB_ENV
+
+      - name: Create release branch
+        run: git checkout -b release/${{ env.PACKAGE_VERSION }}
+
+      - name: Initialize mandatory git config
+        run: |
+          git config user.name ${{ github.actor }}
+          git config user.email ${{ github.actor }}@users.noreply.github.com
+
+      - name: Commit changelog and manifest files
+        id: make-commit
+        run: |
+          git add package.json
+          git add package-lock.json
+          git commit --message "Prepare release ${{ env.PACKAGE_VERSION }}"
+
+          echo "::set-output name=commit::$(git rev-parse HEAD)"
+
+      - name: Push new branch
+        run: git push origin release/${{ env.PACKAGE_VERSION }}
+
+      - name: Create pull request
+        uses: thomaseizinger/create-pull-request@1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        with:
+          head: release/${{ env.PACKAGE_VERSION }}
+          base: master
+          title: Release version ${{ env.PACKAGE_VERSION }}
+          body: |
+            Hi @${{ github.actor }}!
+
+            This PR was created in response to a manual trigger of the release workflow here: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}.
+            I've updated versions in the package.json in this commit: ${{ steps.make-commit.outputs.commit }}.
+
+            Merging this PR will create a GitHub release and upload any assets that are created as part of the release build.
