@@ -20,7 +20,7 @@ on:
         required: true
 
 jobs:
-  call-workflow-passing-data:
+  draft-release:
     uses: doddle/shared-workflows/.github/workflows/reusable-draft-new-release-workflow.yml@master
     with:
       semver: ${{ github.event.inputs.semver }}
@@ -40,7 +40,7 @@ on:
       - closed
 
 jobs:
-  call-workflow-passing-data:
+  publish-release:
     uses: doddle/shared-workflows/.github/workflows/reusable-publish-new-release-workflow.yml@master
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
