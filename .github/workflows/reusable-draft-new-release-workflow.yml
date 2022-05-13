@@ -49,6 +49,7 @@ jobs:
           head: release/${{ env.PACKAGE_VERSION }}
           base: master
           title: Release version ${{ env.PACKAGE_VERSION }}
+          reviewers : ${{ github.actor }}
           body: |
             Hi @${{ github.actor }}!
 
