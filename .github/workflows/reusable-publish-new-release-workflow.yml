@@ -31,6 +31,7 @@ jobs:
           echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Create Release
+        if: ${{ env.RELEASE_VERSION }}
         uses: thomaseizinger/create-release@1.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -42,14 +43,44 @@ jobs:
           prerelease: false
 
       - name: Initialize mandatory git config
+        if: ${{ env.RELEASE_VERSION }}
         run: |
           git config user.name ${{ github.actor }}
           git config user.email ${{ github.actor }}@users.noreply.github.com
 
       - name: Merge master back to develop
+        if: ${{ env.RELEASE_VERSION }}
         run: |
           git fetch --unshallow
           git checkout develop
           git pull
           git merge --ff-only master -m "Auto-merge master back to develop"
           git push
+
+      - name: Something went wrong
+        if: ${{ failure() }}
+        uses: thomaseizinger/create-pull-request@1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        with:
+          head: master
+          base: develop
+          title: Back merge for version ${{ env.RELEASE_VERSION }} into develop
+          reviewers : ${{ github.actor }}
+          body: |
+            Hi @${{ github.actor }}!
+
+            This PR was created because something has gone wrong!
+
+            Please open the build to investigate: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}.
+
+            Note that if the "Create Release" step has passed its likely this code is being deployed to prod already (you can validate this by looking at the releases in github or looking for a git tag)
+
+            There are a few possible reasons for a failure:
+            - Retrieving the version from the release branch name failed, you will need to investigate the reasons for this and manually finish this release
+            - Creating the Github Release / git tag failed, you will need to investigate the reasons for this and manually finish this release
+            - Another PR was merged into develop, this will need to be resolved manually, probably by just starting a new release
+            - There are conflicts that mean this can't be fast-forwarded, this will need to be resolved and the release finished manually
+            - The back merge failed, You will need to manually reconcile this and merge this PR into develop, its likely that this failed because the PR created in response to the draft workflow was SQUASHED into master.
+
+            Check your merge strategy below!
