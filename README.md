@@ -3,7 +3,12 @@ shared-workflows
 
 Stores generic workflows to simplify gitflow releases that we uses in our organisation
 
-Example pipeline to draft a release
+## How to use
+
+- In the root of the repository, create a directory called `.github/workflows`
+- In that directory, create a file called `draft-release.yml`
+- In that file, copy the content of the following:
+
 ```yaml
 name: draft release
 
@@ -12,7 +17,7 @@ on:
     inputs:
       semver:
         type: choice
-        description: Type of semver release your doing
+        description: "Semantic version to draft"
         options:
         - patch
         - minor
@@ -28,7 +33,9 @@ jobs:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
 ```
 
-Example pipeline to publish a release
+- In that directory, create a file called `publish-release.yml`
+- In that file, copy the content of the following:
+
 ```yaml
 name: publish release
 
