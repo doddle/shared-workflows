@@ -6,6 +6,9 @@ on:
       semver:
         required: true
         type: string
+      note:
+        required: false
+        type: string
     secrets:
       GH_TOKEN:
         required: true
@@ -35,8 +38,7 @@ jobs:
           git add package.json
           git add package-lock.json
           git commit --message "Prepare release ${{ env.PACKAGE_VERSION }}"
-
-          echo "::set-output name=commit::$(git rev-parse HEAD)"
+          echo "::set-output name=commit::$(git rev-parse HEAD)
 
       - name: Push new branch
         run: git push origin release/${{ env.PACKAGE_VERSION }}
@@ -57,3 +59,18 @@ jobs:
             I've updated versions in the package.json in this commit: ${{ steps.make-commit.outputs.commit }}.
 
             Merging this PR will create a GitHub release and upload any assets that are created as part of the release build.
+
+            Release Notes:
+            ${{ inputs.note }}
+
+      - name: Make note
+        run: |
+          mkdir -p ~/tmp/notes
+          echo ${{ inputs.note }} >> ~/tmp/notes/note-${{ env.PACKAGE_VERSION }}.txt
+          cat ~/tmp/notes/note-${{ env.PACKAGE_VERSION }}.txt
+
+      - name: Cache note
+        uses: actions/cache@v2
+        with:
+          path: ~/tmp/notes
+          key: notes-${{ env.PACKAGE_VERSION }}

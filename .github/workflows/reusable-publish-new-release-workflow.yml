@@ -19,7 +19,6 @@ jobs:
         run: |
           BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
           VERSION=${BRANCH_NAME#release/}
-
           echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Extract version from branch name (for hotfix branches)
@@ -27,8 +26,20 @@ jobs:
         run: |
           BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
           VERSION=${BRANCH_NAME#hotfix/}
-
           echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Load cache
+        id: cache-notes
+        uses: actions/cache@v2
+        with:
+          path: ~/tmp/notes
+          key: notes-${{ env.RELEASE_VERSION }}
+
+      - name: Get note from cache
+        if: steps.cache-notes.outputs.cache-hit != 'false'
+        run: |
+          echo ~/tmp/notes/note.txt
+          echo "RELEASE_NOTE=$(cat ~/tmp/notes/note-${{ env.RELEASE_VERSION }}.txt)" >> $GITHUB_ENV
 
       - name: Create Release
         if: ${{ env.RELEASE_VERSION }}
@@ -39,6 +50,7 @@ jobs:
           target_commitish: ${{ github.event.pull_request.merge_commit_sha }}
           tag_name: v${{ env.RELEASE_VERSION }}
           name: v${{ env.RELEASE_VERSION }}
+          body: ${{ env.RELEASE_NOTE }}
           draft: false
           prerelease: false
 
