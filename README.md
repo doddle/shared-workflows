@@ -18,6 +18,10 @@ on:
         - minor
         - major
         required: true
+      note:
+        type: string
+        description: Note to add to the release
+        required: false
 
 jobs:
   draft-release:
