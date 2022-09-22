@@ -28,6 +28,7 @@ jobs:
     uses: doddle/shared-workflows/.github/workflows/reusable-draft-new-release-workflow.yml@1.x
     with:
       semver: ${{ github.event.inputs.semver }}
+      note: ${{ github.event.inputs.note }}
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
 ```
